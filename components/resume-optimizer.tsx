@@ -616,30 +616,108 @@ export function ResumeOptimizer() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f7f8fa] px-5 py-6 text-slate-900 lg:px-8">
-      <div className="mx-auto grid max-w-[1440px] gap-6">
-        <header className="flex flex-col gap-4 border-b border-slate-200 pb-5 lg:flex-row lg:items-end lg:justify-between">
+    <main className="min-h-screen bg-[#f6f7f9] px-4 py-5 text-slate-900 sm:px-6 lg:px-8">
+      <div className="mx-auto grid max-w-[1480px] gap-5">
+        <header className="grid gap-4 border-b border-slate-200 pb-5 lg:grid-cols-[1fr_auto] lg:items-end">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
               ResuMatch AI
             </p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-normal md:text-4xl">
+            <h1 className="mt-2 text-3xl font-semibold tracking-normal text-slate-950 md:text-4xl">
               Resume and cover letter optimizer
             </h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+              Load the candidate profile, paste the JD, select projects, then
+              export the tailored documents.
+            </p>
           </div>
-          <div className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600">
-            {keywordLine || "Baseline preview"}
+          <div className="grid gap-2 rounded-md border border-slate-200 bg-white px-4 py-3 text-sm shadow-sm lg:min-w-[360px]">
+            <div className="flex items-center justify-between gap-4">
+              <span className="font-semibold text-slate-950">
+                {activeProfile.person.name}
+              </span>
+              <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">
+                {atsAnalysis.score}/100
+              </span>
+            </div>
+            <p className="truncate text-slate-500">
+              {keywordLine || "Baseline preview"}
+            </p>
           </div>
         </header>
 
-        <section className="grid gap-5 xl:grid-cols-[minmax(0,0.92fr)_minmax(640px,1.08fr)]">
-          <div className="grid content-start gap-5">
+        <section className="grid items-start gap-5 xl:grid-cols-[minmax(390px,0.48fr)_minmax(720px,0.52fr)]">
+          <div className="grid content-start gap-4">
             <Card className="shadow-sm">
               <CardHeader>
-                <CardTitle>Target role</CardTitle>
+                <CardTitle>1. Candidate setup</CardTitle>
                 <CardDescription>
-                  Paste the job description and choose the strongest projects.
-                  The resume and cover letter will be tailored together.
+                  Add the API key and confirm whose profile is active.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="grid gap-2">
+                  <Label htmlFor="groq-api-key">Groq API key</Label>
+                  <input
+                    id="groq-api-key"
+                    value={groqApiKey}
+                    onChange={(event) => setGroqApiKey(event.target.value)}
+                    placeholder="gsk_..."
+                    type="password"
+                    className="h-10 rounded-md border border-input bg-white px-3 text-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
+                  />
+                  <p className="text-xs leading-5 text-slate-500">
+                    Stored only in this browser. The server uses it for the
+                    current request and does not save it.
+                  </p>
+                </div>
+
+                <div className="grid gap-3 rounded-md border bg-white p-3 text-sm sm:grid-cols-[1fr_auto] sm:items-center">
+                  <div>
+                    <p className="font-semibold text-slate-900">
+                      Active profile: {activeProfile.person.name}
+                    </p>
+                    <p className="mt-1 text-slate-500">
+                      {activeProfile.person.role} ·{" "}
+                      {activeProfile.projects.length} projects
+                    </p>
+                  </div>
+                  <Button variant="outline" onClick={exportProfileJson}>
+                    Export profile
+                  </Button>
+                </div>
+
+                <details className="rounded-md border bg-white">
+                  <summary className="cursor-pointer px-3 py-2 text-sm font-semibold text-slate-800">
+                    Edit or import profile JSON
+                  </summary>
+                  <div className="space-y-3 border-t p-3">
+                    <Textarea
+                      value={profileJson}
+                      onChange={(event) => setProfileJson(event.target.value)}
+                      className="min-h-[170px] resize-y font-mono text-xs"
+                      placeholder="Paste a BaselineResume JSON profile here..."
+                    />
+
+                    <div className="flex flex-wrap gap-2">
+                      <Button variant="outline" onClick={applyProfileJson}>
+                        Load profile
+                      </Button>
+                      <Button variant="outline" onClick={resetProfile}>
+                        Reset sample
+                      </Button>
+                    </div>
+                  </div>
+                </details>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-sm">
+              <CardHeader>
+                <CardTitle>2. Target role</CardTitle>
+                <CardDescription>
+                  Paste the JD. The optimize button turns on after 120
+                  characters and at least one selected project.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -647,15 +725,17 @@ export function ResumeOptimizer() {
                   value={jobDescription}
                   onChange={(event) => setJobDescription(event.target.value)}
                   placeholder="Paste the job description here..."
-                  className="min-h-[310px] resize-none"
+                  className="min-h-[260px] resize-y"
                 />
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
                   <p className="text-sm font-medium text-slate-500">
-                    {jobDescription.trim().length} characters
+                    {jobDescription.trim().length} characters · {selectedCount}{" "}
+                    projects selected
                   </p>
                   <Button
                     onClick={optimizeResume}
                     disabled={!canOptimize || isOptimizing}
+                    className="sm:min-w-[190px]"
                   >
                     {isOptimizing ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -675,62 +755,83 @@ export function ResumeOptimizer() {
 
             <Card className="shadow-sm">
               <CardHeader>
-                <CardTitle>Candidate setup</CardTitle>
+                <CardTitle>3. Projects to include</CardTitle>
                 <CardDescription>
-                  Bring your own Groq key and load any candidate profile JSON.
+                  {selectedCount}/{projectOptions.length} selected. Every
+                  selected project is optimized against the JD.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="grid gap-3 sm:grid-cols-2">
+                {projectOptions.map((project) => {
+                  const checked = selectedProjectIds.includes(project.id);
+
+                  return (
+                    <Label
+                      key={project.id}
+                      className="flex cursor-pointer items-start gap-3 rounded-md border bg-white p-3 transition-colors hover:bg-slate-50"
+                    >
+                      <Checkbox
+                        checked={checked}
+                        onCheckedChange={() => toggleProject(project.id)}
+                        className="mt-0.5"
+                      />
+                      <span className="grid gap-1">
+                        <span className="font-semibold leading-5">
+                          {project.name}
+                        </span>
+                        <span className="text-sm font-normal leading-5 text-slate-500">
+                          {project.subtitle}
+                        </span>
+                        <span className="text-xs font-medium leading-5 text-slate-400">
+                          {project.technologies.join(" | ")}
+                        </span>
+                      </span>
+                    </Label>
+                  );
+                })}
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-sm">
+              <CardHeader>
+                <CardTitle>ATS match</CardTitle>
+                <CardDescription>
+                  Honest score from the JD against supported resume evidence.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="groq-api-key">Groq API key</Label>
-                  <input
-                    id="groq-api-key"
-                    value={groqApiKey}
-                    onChange={(event) => setGroqApiKey(event.target.value)}
-                    placeholder="gsk_..."
-                    type="password"
-                    className="h-10 rounded-md border border-input bg-white px-3 text-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
+                <div className="grid gap-4 sm:grid-cols-[110px_1fr] sm:items-start">
+                  <div className="rounded-md border bg-white px-4 py-3">
+                    <span className="block text-4xl font-semibold tracking-normal text-slate-950">
+                      {atsAnalysis.score}
+                    </span>
+                    <span className="text-sm font-semibold text-slate-500">
+                      /100
+                    </span>
+                  </div>
+                  <p className="text-sm leading-6 text-slate-600">
+                    {atsAnalysis.summary}
+                  </p>
+                </div>
+                <div className="grid gap-3 text-sm">
+                  <AnalysisList
+                    title="Strong signals"
+                    items={atsAnalysis.strengths}
                   />
-                  <p className="text-xs leading-5 text-slate-500">
-                    Stored only in this browser. The server uses it for the current request and does not save it.
-                  </p>
-                </div>
-
-                <div className="rounded-md border bg-white p-3 text-sm">
-                  <p className="font-semibold text-slate-900">
-                    Active profile: {activeProfile.person.name}
-                  </p>
-                  <p className="mt-1 text-slate-500">
-                    {activeProfile.person.role} · {activeProfile.projects.length} projects
-                  </p>
-                </div>
-
-                <Textarea
-                  value={profileJson}
-                  onChange={(event) => setProfileJson(event.target.value)}
-                  className="min-h-[180px] resize-y font-mono text-xs"
-                  placeholder="Paste a BaselineResume JSON profile here..."
-                />
-
-                <div className="flex flex-wrap gap-2">
-                  <Button variant="outline" onClick={applyProfileJson}>
-                    Load profile
-                  </Button>
-                  <Button variant="outline" onClick={exportProfileJson}>
-                    Export profile
-                  </Button>
-                  <Button variant="outline" onClick={resetProfile}>
-                    Reset default
-                  </Button>
+                  <AnalysisList title="Gaps" items={atsAnalysis.gaps} />
+                  <AnalysisList
+                    title="Next improvements"
+                    items={atsAnalysis.recommendations}
+                  />
                 </div>
               </CardContent>
             </Card>
 
             <Card className="shadow-sm">
               <CardHeader>
-                <CardTitle>Application cockpit</CardTitle>
+                <CardTitle>Application tracker</CardTitle>
                 <CardDescription>
-                  Track roles locally and use the final submit step manually.
+                  Save roles locally. Keep final submission manual.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -839,80 +940,21 @@ export function ResumeOptimizer() {
                 </div>
               </CardContent>
             </Card>
-
-            <Card className="shadow-sm">
-              <CardHeader>
-                <CardTitle>ATS match</CardTitle>
-                <CardDescription>
-                  Honest score from the JD against supported resume evidence.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-end gap-3">
-                  <span className="text-5xl font-semibold tracking-normal text-slate-950">
-                    {atsAnalysis.score}
-                  </span>
-                  <span className="pb-2 text-sm font-semibold text-slate-500">
-                    /100
-                  </span>
-                </div>
-                <p className="text-sm leading-6 text-slate-600">
-                  {atsAnalysis.summary}
-                </p>
-                <div className="grid gap-3 text-sm">
-                  <AnalysisList title="Strong signals" items={atsAnalysis.strengths} />
-                  <AnalysisList title="Gaps" items={atsAnalysis.gaps} />
-                  <AnalysisList
-                    title="Next improvements"
-                    items={atsAnalysis.recommendations}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-sm">
-              <CardHeader>
-                <CardTitle>Projects</CardTitle>
-                <CardDescription>
-                  {selectedCount}/{projectOptions.length} selected. Every selected project will be optimized against the job description.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="grid gap-3">
-                {projectOptions.map((project) => {
-                  const checked = selectedProjectIds.includes(project.id);
-
-                  return (
-                    <Label
-                      key={project.id}
-                      className="flex cursor-pointer items-start gap-3 rounded-md border bg-white p-3 transition-colors hover:bg-slate-50"
-                    >
-                      <Checkbox
-                        checked={checked}
-                        onCheckedChange={() => toggleProject(project.id)}
-                        className="mt-0.5"
-                      />
-                      <span className="grid gap-1">
-                        <span className="font-semibold leading-5">
-                          {project.name}
-                        </span>
-                        <span className="text-sm font-normal leading-5 text-slate-500">
-                          {project.subtitle}
-                        </span>
-                        <span className="text-xs font-medium leading-5 text-slate-400">
-                          {project.technologies.join(" | ")}
-                        </span>
-                      </span>
-                    </Label>
-                  );
-                })}
-              </CardContent>
-            </Card>
           </div>
 
-          <div className="grid gap-3">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-center gap-2">
-                <h2 className="text-lg font-semibold">Preview</h2>
+          <div className="grid gap-3 xl:sticky xl:top-5">
+            <div className="rounded-md border border-slate-200 bg-white p-3 shadow-sm">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <div className="flex items-center gap-3">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                      Document preview
+                    </p>
+                    <h2 className="text-lg font-semibold text-slate-950">
+                      {activePreview === "resume" ? "Resume" : "Cover letter"}
+                    </h2>
+                  </div>
+                </div>
                 <div className="inline-flex rounded-md border bg-white p-1">
                   <Button
                     size="sm"
@@ -932,7 +974,7 @@ export function ResumeOptimizer() {
                   </Button>
                 </div>
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="mt-3 flex flex-wrap gap-2 lg:justify-end">
                 <Button
                   variant="outline"
                   onClick={() => exportLatex(activePreview)}
@@ -955,16 +997,12 @@ export function ResumeOptimizer() {
                 person={activeProfile.person}
                 resume={resume}
                 previewId={resumePreviewId}
-                onExport={() => exportPdf("resume")}
-                isExporting={exportingDocument === "resume"}
               />
             ) : (
               <CoverLetterPreview
                 person={activeProfile.person}
                 coverLetter={coverLetter}
                 previewId={coverLetterPreviewId}
-                onExport={() => exportPdf("coverLetter")}
-                isExporting={exportingDocument === "coverLetter"}
               />
             )}
           </div>
