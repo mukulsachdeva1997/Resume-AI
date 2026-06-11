@@ -44,6 +44,40 @@ function isBaselineResume(value: unknown): value is BaselineResume {
   );
 }
 
+function cleanGroqError(error: unknown) {
+  const rawMessage =
+    error instanceof Error ? error.message : "Unexpected Groq API error.";
+  const status =
+    typeof error === "object" &&
+    error !== null &&
+    "status" in error &&
+    typeof error.status === "number"
+      ? error.status
+      : undefined;
+  const retryMatch = rawMessage.match(/try again in ([^.]+(?:\.\d+)?s)/i);
+  const isRateLimit =
+    status === 429 ||
+    /rate limit|rate_limit|tokens per day|TPD|limit reached/i.test(
+      rawMessage
+    );
+
+  if (isRateLimit) {
+    return {
+      status: 429,
+      message: [
+        "Groq free-tier token limit reached for this API key.",
+        retryMatch ? `Try again in about ${retryMatch[1]}.` : "Try again later.",
+        "You can also use another Groq key or a smaller model."
+      ].join(" ")
+    };
+  }
+
+  return {
+    status: status && status >= 400 && status < 600 ? status : 500,
+    message: rawMessage
+  };
+}
+
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
   const parsedInput = optimizeResumeInputSchema.safeParse(body);
@@ -183,11 +217,11 @@ export async function POST(request: Request) {
       atsAnalysis: parsedAtsAnalysis.data
     });
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Unexpected error while optimizing the resume.";
+    const groqError = cleanGroqError(error);
 
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json(
+      { error: groqError.message },
+      { status: groqError.status }
+    );
   }
 }
