@@ -7,6 +7,7 @@ export const baselineResume: BaselineResume = {
     location: "33100, Paderborn, Germany",
     email: "mukulsachdeva1997@gmail.com",
     phone: "(+49) 017682407998",
+    photoUrl: "/profile-photo.jpg",
     links: [
       {
         label: "mukulsachdeva1997.github.io/MukulPortfolio-1/",

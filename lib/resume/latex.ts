@@ -27,7 +27,7 @@ function href(url: string, label: string) {
   return `\\href{${url}}{${escapeLatex(label)}}`;
 }
 
-function preamble(kind: "resume" | "letter") {
+function preamble(kind: "resume" | "letter", includePhoto = false) {
   const geometry =
     kind === "resume"
       ? "top=0.75cm,bottom=0.95cm,left=1.25cm,right=1.25cm"
@@ -58,12 +58,12 @@ function preamble(kind: "resume" | "letter") {
   \vspace{-0.88em}\rule{\textwidth}{1.15pt}\vspace{0.86em}
 }
 \newcommand{\cvphoto}{%
-  \IfFileExists{profile-photo.jpg}{%
+  ${includePhoto ? String.raw`\IfFileExists{profile-photo.jpg}{%
     \begin{tikzpicture}
       \clip (0,0) circle (0.92cm);
       \node at (0,0) {\includegraphics[width=1.84cm,height=1.84cm]{profile-photo.jpg}};
     \end{tikzpicture}\\[0.12em]%
-  }{}%
+  }{}%` : ""}
 }
 \setlist[itemize]{label=-,leftmargin=1.05em,rightmargin=0pt,topsep=2pt,itemsep=1.5pt,parsep=0pt,partopsep=0pt}
 `;
@@ -182,11 +182,11 @@ export function buildResumeLatex({
   const linkedIn = person.links.find((link) => link.label.includes("linkedin"));
   const portfolio = person.links.find((link) => !link.label.includes("linkedin"));
 
-  return `${preamble("resume")}
+  return `${preamble("resume", Boolean(person.photoUrl))}
 \\begin{document}
 
 \\begin{center}
-% Upload profile-photo.jpg beside this .tex file in Overleaf to show the circular profile photo.
+${person.photoUrl ? "% Upload profile-photo.jpg beside this .tex file in Overleaf to show the circular profile photo." : ""}
 \\cvphoto
 \\vspace{0.56em}
 {\\huge\\bfseries ${escapeLatex(person.name)}}\\\\[0.12em]

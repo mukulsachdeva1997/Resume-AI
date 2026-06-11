@@ -11,6 +11,7 @@ export type ResumePerson = {
   location?: string;
   email?: string;
   phone?: string;
+  photoUrl?: string;
   links: ResumeLink[];
 };
 

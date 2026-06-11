@@ -12,6 +12,10 @@ export function buildResumeRewritePrompt({
   const selectedProjects = baselineResume.projects.filter((project) =>
     selectedProjectIds.includes(project.id)
   );
+  const primaryExperience = baselineResume.experience[0];
+  const experienceReference = primaryExperience
+    ? `${primaryExperience.title} at ${primaryExperience.company}`
+    : "the candidate's strongest supported experience";
 
   return {
     system: [
@@ -85,7 +89,7 @@ export function buildResumeRewritePrompt({
             greeting: "Dear Hiring Team,",
             paragraphs: [
               "Opening paragraph tailored to the job description and role signals without inventing company facts.",
-              "Paragraph connecting full-stack experience at Lasken GmbH to the JD.",
+              `Paragraph connecting ${experienceReference} to the JD.`,
               "Paragraph connecting selected projects and AI/product/data relevance to the JD.",
               "Closing motivation paragraph tailored to the role, team, and growth fit."
             ],

@@ -32,6 +32,11 @@ const resumePreviewId = "resume-preview";
 const coverLetterPreviewId = "cover-letter-preview";
 const a4CanvasWidth = 794;
 const a4CanvasHeight = 1123;
+const storageKeys = {
+  groqApiKey: "resumatch-ai:v2:groqApiKey",
+  profile: "resumatch-ai:v2:profile",
+  applications: "resumatch-ai:v2:applications"
+};
 
 type ApplicationStatus =
   | "Saved"
@@ -93,8 +98,9 @@ function createBaselinePreview(
     }));
 
   return {
-    summary:
-      "Full-Stack Developer experienced in building React, Next.js, TypeScript, Angular, Python Flask, C# .NET, REST API, and SQL-backed web applications across product, data, and enterprise feature work.",
+    summary: `${profile.person.role} experienced with ${profile.profileStack
+      .slice(0, 8)
+      .join(", ")} across ${profile.experience.length ? "professional and project" : "project"} work.`,
     keywordHighlights: profile.profileStack.slice(0, 8),
     skills: profile.profileStack,
     expertise: profile.expertise,
@@ -115,12 +121,20 @@ function createBaselinePreview(
 }
 
 function createBaselineCoverLetter(profile: BaselineResume = baselineResume): TailoredCoverLetter {
+  const primaryExperience = profile.experience[0];
+  const primaryProject = profile.projects[0];
+  const primaryStack = profile.profileStack.slice(0, 6).join(", ");
+
   return {
     greeting: "Dear Hiring Team,",
     paragraphs: [
-      "I am excited to apply for this role. The opportunity to contribute to modern web applications, AI-oriented workflows, and user-focused digital products is especially appealing to me because it combines practical product development with technologies I have been actively building with.",
-      "My background is in full stack development with a strong frontend focus and hands-on experience building modern web applications, backend APIs, and user-focused digital products. In my recent role at Lasken GmbH, I developed responsive React and Angular applications, built and maintained REST APIs using Python Flask and C#/.NET, and worked with MySQL, Docker, AWS, and GitHub in a collaborative development environment.",
-      "I have also worked on projects that connect software development with AI-oriented workflows. In KnowYourRights, I built an AI-powered legal rights platform and integrated a privacy-first Ollama document helper to support scalable, source-backed user guidance.",
+      `I am excited to apply for this role. The opportunity to contribute to modern web applications, user-focused digital products, and practical engineering work is especially appealing to me because it connects closely with my background in ${primaryStack}.`,
+      primaryExperience
+        ? `My recent background includes ${primaryExperience.title} experience at ${primaryExperience.company}, where I worked with ${primaryExperience.technologies.slice(0, 6).join(", ")} across product and implementation work.`
+        : "My background includes hands-on software development experience across product, implementation, and collaborative delivery work.",
+      primaryProject
+        ? `I have also built projects such as ${primaryProject.name}, which reflects my ability to turn technical requirements into practical, usable software.`
+        : "I have also built project work that reflects my ability to turn technical requirements into practical, usable software.",
       "What attracts me most to this role is the chance to contribute in a structured team environment while continuing to grow technically. I would be excited to bring my development experience, strong learning mindset, and motivation to your team."
     ],
     closing: "Thank you for your consideration.",
@@ -147,6 +161,13 @@ function createBaselineAtsAnalysis(): AtsAnalysis {
 
 function getDefaultProjectIds(profile: BaselineResume) {
   return profile.projects.slice(0, 3).map((project) => project.id);
+}
+
+function slugifyName(name: string) {
+  return name
+    .trim()
+    .replace(/[^a-z0-9]+/gi, "-")
+    .replace(/^-+|-+$/g, "") || "Candidate";
 }
 
 function isBaselineProfile(value: unknown): value is BaselineResume {
@@ -224,10 +245,10 @@ export function ResumeOptimizer() {
   );
 
   useEffect(() => {
-    const savedKey = window.localStorage.getItem("resumatch:grokApiKey");
-    const savedProfile = window.localStorage.getItem("resumatch:profile");
+    const savedKey = window.localStorage.getItem(storageKeys.groqApiKey);
+    const savedProfile = window.localStorage.getItem(storageKeys.profile);
     const savedApplications = window.localStorage.getItem(
-      "resumatch:applications"
+      storageKeys.applications
     );
 
     if (savedKey) {
@@ -248,7 +269,7 @@ export function ResumeOptimizer() {
           setCoverLetter(createBaselineCoverLetter(parsedProfile));
         }
       } catch {
-        window.localStorage.removeItem("resumatch:profile");
+        window.localStorage.removeItem(storageKeys.profile);
       }
     }
 
@@ -260,18 +281,18 @@ export function ResumeOptimizer() {
           setApplications(parsedApplications);
         }
       } catch {
-        window.localStorage.removeItem("resumatch:applications");
+        window.localStorage.removeItem(storageKeys.applications);
       }
     }
   }, []);
 
   useEffect(() => {
-    window.localStorage.setItem("resumatch:grokApiKey", groqApiKey);
+    window.localStorage.setItem(storageKeys.groqApiKey, groqApiKey);
   }, [groqApiKey]);
 
   useEffect(() => {
     window.localStorage.setItem(
-      "resumatch:applications",
+      storageKeys.applications,
       JSON.stringify(applications)
     );
   }, [applications]);
@@ -438,8 +459,8 @@ export function ResumeOptimizer() {
 
       pdf.save(
         documentType === "resume"
-          ? "Mukul-Sachdeva-Resume.pdf"
-          : "Mukul-Sachdeva-Cover-Letter.pdf"
+          ? `${slugifyName(activeProfile.person.name)}-Resume.pdf`
+          : `${slugifyName(activeProfile.person.name)}-Cover-Letter.pdf`
       );
 
       setStatus(
@@ -492,8 +513,8 @@ export function ResumeOptimizer() {
       content,
       filename:
         documentType === "resume"
-          ? "Mukul-Sachdeva-Resume.tex"
-          : "Mukul-Sachdeva-Cover-Letter.tex",
+          ? `${slugifyName(activeProfile.person.name)}-Resume.tex`
+          : `${slugifyName(activeProfile.person.name)}-Cover-Letter.tex`,
       mimeType: "application/x-tex;charset=utf-8"
     });
 
@@ -520,7 +541,7 @@ export function ResumeOptimizer() {
       setResume(createBaselinePreview(defaultIds, parsedProfile));
       setCoverLetter(createBaselineCoverLetter(parsedProfile));
       window.localStorage.setItem(
-        "resumatch:profile",
+        storageKeys.profile,
         JSON.stringify(parsedProfile)
       );
       setStatus("Candidate profile loaded.");
@@ -546,8 +567,8 @@ export function ResumeOptimizer() {
     setSelectedProjectIds(defaultIds);
     setResume(createBaselinePreview(defaultIds, baselineResume));
     setCoverLetter(createBaselineCoverLetter(baselineResume));
-    window.localStorage.removeItem("resumatch:profile");
-    setStatus("Profile reset to default.");
+    window.localStorage.removeItem(storageKeys.profile);
+    setStatus("Profile reset to bundled sample profile.");
   }
 
   function saveCurrentJob() {

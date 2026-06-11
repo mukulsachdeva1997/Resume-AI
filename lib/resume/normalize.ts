@@ -6,22 +6,6 @@ import type {
   TailoredResume
 } from "./types";
 
-const DEFAULT_SUMMARY =
-  "Full-Stack Developer with a strong frontend focus, building modern web applications and product features with React, Next.js, TypeScript, Python, C#/.NET, REST APIs, SQL, and cloud deployment tools.";
-
-const DEFAULT_COVER_LETTER: TailoredCoverLetter = {
-  greeting: "Dear Hiring Team,",
-  paragraphs: [
-    "I am excited to apply for this role. The opportunity to contribute to modern web applications, AI-oriented workflows, and user-focused digital products is especially appealing to me because it combines practical product development with technologies I have been actively building with.",
-    "My background is in full stack development with a strong frontend focus and hands-on experience building modern web applications, backend APIs, and user-focused digital products. In my recent role at Lasken GmbH, I developed responsive React and Angular applications, built and maintained REST APIs using Python Flask and C#/.NET, and worked with MySQL, Docker, AWS, and GitHub in a collaborative development environment.",
-    "I have also worked on projects that connect software development with AI-oriented workflows. In KnowYourRights, I built an AI-powered legal rights platform and integrated a privacy-first Ollama document helper to support scalable, source-backed user guidance.",
-    "What attracts me most to this role is the chance to contribute in a structured team environment while continuing to grow technically. I would be excited to bring my development experience, strong learning mindset, and motivation to your team."
-  ],
-  closing: "Thank you for your consideration.",
-  signoff: "Kind regards,",
-  signature: "Mukul Sachdeva"
-};
-
 const DEFAULT_ATS_ANALYSIS: AtsAnalysis = {
   score: 70,
   summary:
@@ -37,6 +21,35 @@ const DEFAULT_ATS_ANALYSIS: AtsAnalysis = {
     "Keep only factual keywords and emphasize the closest supported frontend, UX, and API experience."
   ]
 };
+
+function createDefaultSummary(profile: BaselineResume) {
+  return `${profile.person.role} experienced with ${profile.profileStack
+    .slice(0, 8)
+    .join(", ")} across ${profile.experience.length ? "professional and project" : "project"} work.`;
+}
+
+function createDefaultCoverLetter(profile: BaselineResume): TailoredCoverLetter {
+  const primaryExperience = profile.experience[0];
+  const primaryProject = profile.projects[0];
+  const primaryStack = profile.profileStack.slice(0, 6).join(", ");
+
+  return {
+    greeting: "Dear Hiring Team,",
+    paragraphs: [
+      `I am excited to apply for this role because it connects closely with my background in ${primaryStack || "software development"} and user-focused digital product work.`,
+      primaryExperience
+        ? `My experience as ${primaryExperience.title} at ${primaryExperience.company} involved ${primaryExperience.technologies.slice(0, 6).join(", ")} across implementation and delivery work.`
+        : "My experience includes hands-on implementation work across software projects, collaboration, and delivery.",
+      primaryProject
+        ? `I have also built projects such as ${primaryProject.name}, which reflect my ability to turn technical requirements into practical software.`
+        : "I have also built project work that reflects my ability to turn technical requirements into practical software.",
+      "I would be excited to bring my technical foundation, learning mindset, and motivation to contribute meaningfully to your team."
+    ],
+    closing: "Thank you for your consideration.",
+    signoff: "Kind regards,",
+    signature: profile.person.name
+  };
+}
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -89,6 +102,7 @@ export function normalizeGroqOutput({
   const rawResume = isRecord(root.resume) ? root.resume : root;
   const rawCoverLetter = isRecord(root.coverLetter) ? root.coverLetter : {};
   const rawAtsAnalysis = isRecord(root.atsAnalysis) ? root.atsAnalysis : {};
+  const defaultCoverLetter = createDefaultCoverLetter(baselineResume);
 
   const rawProjects = recordArray(rawResume.projects);
   const rawExperience = recordArray(rawResume.experience);
@@ -143,7 +157,7 @@ export function normalizeGroqOutput({
 
   const coverParagraphs = stringArray(
     rawCoverLetter.paragraphs,
-    DEFAULT_COVER_LETTER.paragraphs,
+    defaultCoverLetter.paragraphs,
     4,
     5
   );
@@ -178,7 +192,7 @@ export function normalizeGroqOutput({
 
   return {
     resume: {
-      summary: stringValue(rawResume.summary, DEFAULT_SUMMARY).slice(0, 520),
+      summary: stringValue(rawResume.summary, createDefaultSummary(baselineResume)).slice(0, 520),
       keywordHighlights: stringArray(
         rawResume.keywordHighlights,
         baselineResume.profileStack,

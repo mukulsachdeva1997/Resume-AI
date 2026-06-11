@@ -141,11 +141,13 @@ export function ResumePreview({
 function ResumeHeader({ person }: { person: ResumePerson }) {
   return (
     <header className="text-center">
-      <img
-        src="/profile-photo.jpg"
-        alt="Mukul Sachdeva"
-        className="mx-auto h-[102px] w-[102px] rounded-full object-cover"
-      />
+      {person.photoUrl ? (
+        <img
+          src={person.photoUrl}
+          alt={person.name}
+          className="mx-auto h-[102px] w-[102px] rounded-full object-cover"
+        />
+      ) : null}
       <h2 className="mt-2 text-[28px] font-extrabold leading-none tracking-normal">
         {person.name}
       </h2>

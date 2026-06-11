@@ -60,9 +60,21 @@ export async function POST(request: Request) {
 
   const groqApiKey =
     parsedInput.data.groqApiKey?.trim() || process.env.GROQ_API_KEY;
-  const candidateProfile = isBaselineResume(parsedInput.data.candidateProfile)
-    ? parsedInput.data.candidateProfile
-    : baselineResume;
+
+  if (
+    parsedInput.data.candidateProfile !== undefined &&
+    !isBaselineResume(parsedInput.data.candidateProfile)
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Invalid candidate profile. Fix the profile JSON before optimizing."
+      },
+      { status: 400 }
+    );
+  }
+
+  const candidateProfile = parsedInput.data.candidateProfile ?? baselineResume;
 
   if (!groqApiKey) {
     return NextResponse.json(
