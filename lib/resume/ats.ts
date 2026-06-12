@@ -26,6 +26,33 @@ const requirementCatalog: Requirement[] = [
     recommendation: "Keep React examples visible in the selected projects and experience."
   },
   {
+    label: "Single-page applications",
+    matchers: [/\bsingle[- ]page\b|\bspa\b|\bsingle-page-applikationen\b/i],
+    evidence: [/\bsingle[- ]page\b|\bspa\b|\breact\b|\bnext\.js\b|\bangular\b|\bdashboard\b/i],
+    weight: 7,
+    gap: "Single-page application experience is requested but not strongly evidenced.",
+    strength: "Single-page application work is supported through React, Angular, and dashboard experience.",
+    recommendation: "Highlight React, Angular, and dashboard work as SPA-adjacent evidence."
+  },
+  {
+    label: "Progressive Web Apps",
+    matchers: [/\bprogressive web apps?\b|\bpwa\b/i],
+    evidence: [/\bpwa\b|\bprogressive web apps?\b|\bmobile-first\b|\boffline\b|\bself-hosting\b/i],
+    weight: 7,
+    gap: "Progressive Web App experience is requested but not strongly evidenced.",
+    strength: "PWA experience is directly supported by the Tidy Team project.",
+    recommendation: "Use Tidy Team to highlight PWA support, mobile-first UI, and real-world product behavior."
+  },
+  {
+    label: "Java",
+    matchers: [/\bjava\b/i],
+    evidence: [/\bjava\b/i],
+    weight: 8,
+    gap: "Java is requested, but the profile supports C# .NET and Python Flask rather than Java.",
+    strength: "Java experience is directly supported.",
+    recommendation: "Do not claim Java experience; position C# .NET and Python Flask as adjacent backend experience."
+  },
+  {
     label: "Angular",
     matchers: [/\bangular\b/i],
     evidence: [/\bangular\b/i],
@@ -228,6 +255,37 @@ function unique(items: string[], max: number) {
   return Array.from(new Set(items.filter(Boolean))).slice(0, max);
 }
 
+function removeContradictoryModelItems({
+  items,
+  matchedLabels,
+  missingLabels
+}: {
+  items: string[];
+  matchedLabels: string[];
+  missingLabels: string[];
+}) {
+  const matched = matchedLabels.join(" ").toLowerCase();
+  const missing = missingLabels.join(" ").toLowerCase();
+
+  return items.filter((item) => {
+    const text = item.toLowerCase();
+
+    if (matched.includes("progressive web apps") && /\bpwa\b|progressive web apps?/i.test(text)) {
+      return false;
+    }
+
+    if (matched.includes("single-page applications") && /\bspa\b|single[- ]page/i.test(text)) {
+      return false;
+    }
+
+    if (missing.includes("java") && /\bjava\b/i.test(text)) {
+      return false;
+    }
+
+    return true;
+  });
+}
+
 function analyzeRequirements(jobDescription: string, profile: BaselineResume) {
   const jd = jobDescription.toLowerCase();
   const corpus = corpusFromProfile(profile);
@@ -274,6 +332,21 @@ export function calibrateAtsAnalysis({
   const calibratedScore = clampScore(modelAnalysis.score * 0.35 + evidenceScore * 0.65);
   const matchedLabels = matched.map((item) => item.label).slice(0, 5);
   const missingLabels = missing.map((item) => item.label).slice(0, 5);
+  const modelStrengths = removeContradictoryModelItems({
+    items: modelAnalysis.strengths,
+    matchedLabels,
+    missingLabels
+  });
+  const modelGaps = removeContradictoryModelItems({
+    items: modelAnalysis.gaps,
+    matchedLabels,
+    missingLabels
+  });
+  const modelRecommendations = removeContradictoryModelItems({
+    items: modelAnalysis.recommendations,
+    matchedLabels,
+    missingLabels
+  });
 
   return {
     score: calibratedScore,
@@ -284,21 +357,21 @@ export function calibrateAtsAnalysis({
     strengths: unique(
       [
         ...matched.map((item) => item.strength),
-        ...modelAnalysis.strengths
+        ...modelStrengths
       ],
       4
     ),
     gaps: unique(
       [
         ...missing.map((item) => item.gap),
-        ...modelAnalysis.gaps
+        ...modelGaps
       ],
       4
     ),
     recommendations: unique(
       [
         ...missing.map((item) => item.recommendation),
-        ...modelAnalysis.recommendations
+        ...modelRecommendations
       ],
       4
     )

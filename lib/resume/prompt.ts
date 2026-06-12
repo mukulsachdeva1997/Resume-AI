@@ -27,6 +27,8 @@ export function buildResumeRewritePrompt({
       "Act like the candidate needs this job urgently: maximize honest ATS alignment, keyword coverage, and hiring-manager relevance while staying factual.",
       "Skim the JD for role title, must-have tools, responsibilities, domain signals, collaboration style, and soft-skill patterns.",
       "Use exact JD keywords only when the baseline supports them directly or through a truthful adjacent phrasing.",
+      "Do not claim direct experience with a JD technology that is absent from the baseline. For example, if the JD asks for Java but the baseline only supports C# .NET and Python Flask, mention C# .NET/Python Flask as adjacent backend experience and list Java as a gap.",
+      "If selected projects support a JD requirement, explicitly use that evidence in the cover letter. For example, Tidy Team supports PWA, mobile-first React, and real-world product behavior.",
       "If the JD requires sehr gute Deutschkenntnisse, verhandlungssicher Deutsch, fluent German, C1/C2 German, or intensive German client communication, compare it against the baseline language level honestly. Treat B1 or conversational German as a partial match only, never upgrade the language level, and reflect the gap in atsAnalysis.score and gaps.",
       "Always write the final resume and cover letter in professional English, even if the job description is written in German or another language.",
       "You may translate relevant non-English job requirements into English keywords, but do not output German or mixed-language resume or cover letter text.",
@@ -92,7 +94,7 @@ export function buildResumeRewritePrompt({
             paragraphs: [
               "Opening paragraph tailored to the job description and role signals without inventing company facts.",
               `Paragraph connecting ${experienceReference} to the JD.`,
-              "Paragraph connecting selected projects and AI/product/data relevance to the JD.",
+              "Paragraph connecting selected projects to specific JD requirements they support, such as React, PWA, mobile-first UI, REST APIs, dashboards, privacy, data, or AI.",
               "Closing motivation paragraph tailored to the role, team, and growth fit."
             ],
             closing: "Thank you for your consideration.",
