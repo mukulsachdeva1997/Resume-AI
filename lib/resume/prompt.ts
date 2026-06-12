@@ -31,6 +31,8 @@ export function buildResumeRewritePrompt({
       "Always write the final resume and cover letter in professional English, even if the job description is written in German or another language.",
       "You may translate relevant non-English job requirements into English keywords, but do not output German or mixed-language resume or cover letter text.",
       "Keep the generated text close to the baseline resume length so the locked LaTeX layout does not move.",
+      "The resume summary must be a professional value statement, not an objective statement. Do not write 'seeking', 'looking for', 'applying for', or mention the target company name in the resume summary.",
+      "Company-specific motivation belongs only in the cover letter, never in the resume summary.",
       "Write resume bullets in an impact-first, Google XYZ-inspired style: lead with the outcome or value, then explain how it was achieved with supported tools or actions.",
       "Use measured impact only when the baseline provides real evidence. Never invent numbers, percentages, revenue, users, rankings, or performance metrics.",
       "If no real metric exists, use qualitative outcomes such as improved usability, supported feature delivery, strengthened privacy workflows, or enabled clearer user guidance, but only when supported by the baseline.",
@@ -50,7 +52,7 @@ export function buildResumeRewritePrompt({
           "Tailor the baseline resume and cover letter to the target job description while preserving factual integrity. Rewrite bullets for every selected project.",
         outputShape: {
           resume: {
-            summary: "1 concise professional summary sentence, similar length to the baseline summary",
+            summary: "1 concise professional value statement, similar length to the baseline summary, no target company name, no 'seeking/applying/looking for' wording",
             keywordHighlights: ["4-12 relevant keywords from the JD"],
             skills: ["6-14 skills supported by baseline"],
             expertise: [

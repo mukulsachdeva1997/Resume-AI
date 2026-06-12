@@ -61,6 +61,19 @@ function stringValue(value: unknown, fallback = "") {
   return typeof value === "string" && value.trim() ? value.trim() : fallback;
 }
 
+function resumeSummary(value: unknown, fallback: string) {
+  return stringValue(value, fallback)
+    .replace(/^highly motivated\s+/i, "")
+    .replace(
+      /,?\s+(?:seeking|looking for|applying for|interested in)\b[\s\S]*$/i,
+      ""
+    )
+    .replace(/\s+/g, " ")
+    .replace(/\s+\.$/, ".")
+    .trim()
+    .slice(0, 520);
+}
+
 function stringArray(value: unknown, fallback: string[], min = 0, max = 99) {
   if (!Array.isArray(value)) {
     return fallback.slice(0, max);
@@ -192,7 +205,10 @@ export function normalizeGroqOutput({
 
   return {
     resume: {
-      summary: stringValue(rawResume.summary, createDefaultSummary(baselineResume)).slice(0, 520),
+      summary: resumeSummary(
+        rawResume.summary,
+        createDefaultSummary(baselineResume)
+      ),
       keywordHighlights: stringArray(
         rawResume.keywordHighlights,
         baselineResume.profileStack,
