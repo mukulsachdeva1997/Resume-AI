@@ -76,12 +76,21 @@ export const tailoredCoverLetterSchema = z.object({
   signature: z.string().min(2).max(120)
 });
 
+const keywordGapSchema = z.object({
+  keyword: z.string().min(2).max(80),
+  present: z.boolean(),
+  evidence: z.string().min(2).max(180),
+  action: z.string().min(2).max(180)
+});
+
 export const atsAnalysisSchema = z.object({
   score: z.number().int().min(0).max(100),
   summary: z.string().min(20).max(260),
   strengths: z.array(z.string().min(5).max(160)).min(1).max(4),
   gaps: z.array(z.string().min(5).max(160)).min(1).max(4),
-  recommendations: z.array(z.string().min(5).max(180)).min(1).max(4)
+  recommendations: z.array(z.string().min(5).max(180)).min(1).max(4),
+  keywordGaps: z.array(keywordGapSchema).min(1).max(10),
+  reviewNotes: z.array(z.string().min(5).max(180)).min(1).max(5)
 });
 
 export const groqJsonResponseSchema = z.object({

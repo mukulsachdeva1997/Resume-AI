@@ -108,10 +108,19 @@ export type TailoredCoverLetter = {
   signature: string;
 };
 
+export type KeywordGap = {
+  keyword: string;
+  present: boolean;
+  evidence: string;
+  action: string;
+};
+
 export type AtsAnalysis = {
   score: number;
   summary: string;
   strengths: string[];
   gaps: string[];
   recommendations: string[];
+  keywordGaps: KeywordGap[];
+  reviewNotes: string[];
 };

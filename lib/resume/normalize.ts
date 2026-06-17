@@ -19,6 +19,17 @@ const DEFAULT_ATS_ANALYSIS: AtsAnalysis = {
   ],
   recommendations: [
     "Keep only factual keywords and emphasize the closest supported frontend, UX, and API experience."
+  ],
+  keywordGaps: [
+    {
+      keyword: "Target JD",
+      present: false,
+      evidence: "No target job description has been analyzed yet.",
+      action: "Paste a JD and optimize to build the keyword gap table."
+    }
+  ],
+  reviewNotes: [
+    "Run optimization to review weak bullets, keyword coverage, and factual gaps."
   ]
 };
 
@@ -90,6 +101,20 @@ function stringArray(value: unknown, fallback: string[], min = 0, max = 99) {
 
 function recordArray(value: unknown) {
   return Array.isArray(value) ? value.filter(isRecord) : [];
+}
+
+function keywordGapArray(value: unknown, fallback: AtsAnalysis["keywordGaps"]) {
+  const cleaned = recordArray(value)
+    .map((item) => ({
+      keyword: stringValue(item.keyword).slice(0, 80),
+      present: typeof item.present === "boolean" ? item.present : false,
+      evidence: stringValue(item.evidence, "No evidence found.").slice(0, 180),
+      action: stringValue(item.action, "Keep this as a gap unless profile evidence exists.").slice(0, 180)
+    }))
+    .filter((item) => item.keyword)
+    .slice(0, 10);
+
+  return cleaned.length ? cleaned : fallback;
 }
 
 function numberValue(value: unknown, fallback: number) {
@@ -200,6 +225,16 @@ export function normalizeGroqOutput({
       DEFAULT_ATS_ANALYSIS.recommendations,
       1,
       4
+    ),
+    keywordGaps: keywordGapArray(
+      rawAtsAnalysis.keywordGaps,
+      DEFAULT_ATS_ANALYSIS.keywordGaps
+    ),
+    reviewNotes: stringArray(
+      rawAtsAnalysis.reviewNotes,
+      DEFAULT_ATS_ANALYSIS.reviewNotes,
+      1,
+      5
     )
   };
 

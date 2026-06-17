@@ -155,6 +155,17 @@ function createBaselineAtsAnalysis(): AtsAnalysis {
     gaps: ["No target job description has been analyzed yet."],
     recommendations: [
       "Paste the JD, select relevant projects, then optimize."
+    ],
+    keywordGaps: [
+      {
+        keyword: "Target JD",
+        present: false,
+        evidence: "No JD has been analyzed yet.",
+        action: "Paste a JD and optimize to generate the keyword gap table."
+      }
+    ],
+    reviewNotes: [
+      "The 5-pass ATS workflow runs after optimization."
     ]
   };
 }
@@ -824,6 +835,11 @@ export function ResumeOptimizer() {
                     items={atsAnalysis.recommendations}
                   />
                 </div>
+                <KeywordGapTable gaps={atsAnalysis.keywordGaps} />
+                <AnalysisList
+                  title="5-pass self-review"
+                  items={atsAnalysis.reviewNotes}
+                />
               </CardContent>
             </Card>
 
@@ -1029,6 +1045,58 @@ function AnalysisList({
           </li>
         ))}
       </ul>
+    </div>
+  );
+}
+
+function KeywordGapTable({ gaps }: { gaps: AtsAnalysis["keywordGaps"] }) {
+  return (
+    <div className="overflow-hidden rounded-md border bg-white text-sm">
+      <div className="border-b bg-slate-50 px-3 py-2">
+        <p className="font-semibold text-slate-800">Keyword gap chain</p>
+        <p className="mt-1 text-xs leading-5 text-slate-500">
+          Present keywords are used in the resume. Missing ones stay as gaps or
+          adjacent positioning.
+        </p>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[560px] border-collapse text-left">
+          <thead className="bg-white text-xs uppercase tracking-[0.08em] text-slate-500">
+            <tr>
+              <th className="border-b px-3 py-2">Keyword</th>
+              <th className="border-b px-3 py-2">Status</th>
+              <th className="border-b px-3 py-2">Evidence</th>
+              <th className="border-b px-3 py-2">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {gaps.map((gap) => (
+              <tr key={`${gap.keyword}-${gap.evidence}`}>
+                <td className="border-b px-3 py-2 font-semibold text-slate-900">
+                  {gap.keyword}
+                </td>
+                <td className="border-b px-3 py-2">
+                  <span
+                    className={
+                      gap.present
+                        ? "rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700"
+                        : "rounded-full bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700"
+                    }
+                  >
+                    {gap.present ? "Present" : "Gap"}
+                  </span>
+                </td>
+                <td className="border-b px-3 py-2 text-slate-600">
+                  {gap.evidence}
+                </td>
+                <td className="border-b px-3 py-2 text-slate-600">
+                  {gap.action}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

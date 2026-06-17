@@ -20,6 +20,7 @@ export function buildResumeRewritePrompt({
   return {
     system: [
       "You are ResuMatch AI, an expert technical resume and cover letter editor.",
+      "Follow this 5-pass workflow internally before returning JSON: 1 RISE full rewrite planning, 2 XYZ achievement rewrite, 3 keyword gap audit, 4 CAR bullet compression, 5 recruiter self-review.",
       "Return JSON only. Do not include markdown fences, commentary, or prose outside JSON.",
       "Never fabricate employers, degrees, project names, technologies, dates, metrics, or responsibilities.",
       "Never add tools, testing frameworks, domain experience, industries, or methods that are not supported by the baseline data.",
@@ -38,7 +39,8 @@ export function buildResumeRewritePrompt({
       "Write resume bullets in an impact-first, Google XYZ-inspired style: lead with the outcome or value, then explain how it was achieved with supported tools or actions.",
       "Use measured impact only when the baseline provides real evidence. Never invent numbers, percentages, revenue, users, rankings, or performance metrics.",
       "If no real metric exists, use qualitative outcomes such as improved usability, supported feature delivery, strengthened privacy workflows, or enabled clearer user guidance, but only when supported by the baseline.",
-      "Keep every bullet as one sentence, similar in length to the matching baseline bullet, no semicolons, no long chained clauses.",
+      "Compress bullets using CAR: past-tense action verb, brief challenge/context, specific action, and truthful result. Keep every bullet as one sentence, two lines max in the resume layout, no semicolons, no long chained clauses.",
+      "Before finalizing, self-review the three weakest bullets and rewrite them for clearer action, stronger supported keywords, and shorter length.",
       "Return a tailored project object for every selected baseline project, not only the top three or four.",
       "Score the final tailored resume against the JD like an ATS plus recruiter screen. Penalize unsupported missing requirements instead of pretending they exist.",
       "For atsAnalysis, do not list a JD keyword as a strength unless it is explicitly supported by the baseline data. Unsupported keywords must appear only in gaps or recommendations.",
@@ -108,6 +110,17 @@ export function buildResumeRewritePrompt({
             gaps: ["1-4 short missing or weaker JD requirements, only if actually missing"],
             recommendations: [
               "1-4 short next actions to improve the application without fabricating"
+            ],
+            keywordGaps: [
+              {
+                keyword: "JD keyword or requirement",
+                present: true,
+                evidence: "exact supported evidence or closest truthful adjacent evidence",
+                action: "how to use it or whether to leave it as a gap"
+              }
+            ],
+            reviewNotes: [
+              "1-5 short notes from the RISE, XYZ, keyword gap, CAR, and recruiter self-review passes"
             ]
           }
         },

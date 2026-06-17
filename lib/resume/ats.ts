@@ -1,4 +1,4 @@
-import type { AtsAnalysis, BaselineResume } from "./types";
+import type { AtsAnalysis, BaselineResume, KeywordGap } from "./types";
 
 type Requirement = {
   label: string;
@@ -8,6 +8,7 @@ type Requirement = {
   gap: string;
   strength: string;
   recommendation: string;
+  evidenceLabel?: string;
 };
 
 type RequirementResult = Requirement & {
@@ -23,7 +24,8 @@ const requirementCatalog: Requirement[] = [
     weight: 8,
     gap: "React is requested but not strongly evidenced.",
     strength: "React experience is directly supported.",
-    recommendation: "Keep React examples visible in the selected projects and experience."
+    recommendation: "Keep React examples visible in the selected projects and experience.",
+    evidenceLabel: "React appears in profile stack, projects, and experience."
   },
   {
     label: "Single-page applications",
@@ -32,7 +34,8 @@ const requirementCatalog: Requirement[] = [
     weight: 7,
     gap: "Single-page application experience is requested but not strongly evidenced.",
     strength: "Single-page application work is supported through React, Angular, and dashboard experience.",
-    recommendation: "Highlight React, Angular, and dashboard work as SPA-adjacent evidence."
+    recommendation: "Highlight React, Angular, and dashboard work as SPA-adjacent evidence.",
+    evidenceLabel: "React, Angular, and dashboard work support SPA-style application development."
   },
   {
     label: "Progressive Web Apps",
@@ -41,7 +44,8 @@ const requirementCatalog: Requirement[] = [
     weight: 7,
     gap: "Progressive Web App experience is requested but not strongly evidenced.",
     strength: "PWA experience is directly supported by the Tidy Team project.",
-    recommendation: "Use Tidy Team to highlight PWA support, mobile-first UI, and real-world product behavior."
+    recommendation: "Use Tidy Team to highlight PWA support, mobile-first UI, and real-world product behavior.",
+    evidenceLabel: "Tidy Team includes PWA support, mobile-first UI, and self-hosting support."
   },
   {
     label: "Java",
@@ -50,7 +54,8 @@ const requirementCatalog: Requirement[] = [
     weight: 8,
     gap: "Java is requested, but the profile supports C# .NET and Python Flask rather than Java.",
     strength: "Java experience is directly supported.",
-    recommendation: "Do not claim Java experience; position C# .NET and Python Flask as adjacent backend experience."
+    recommendation: "Do not claim Java experience; position C# .NET and Python Flask as adjacent backend experience.",
+    evidenceLabel: "No Java evidence found; closest backend evidence is C# .NET and Python Flask."
   },
   {
     label: "Angular",
@@ -316,6 +321,62 @@ function scoreFromRequirements(requirements: RequirementResult[]) {
   return clampScore(45 + coverage * 50 - unsupportedMustHaves * 4);
 }
 
+function buildKeywordGaps(requirements: RequirementResult[]): KeywordGap[] {
+  const rows = requirements.slice(0, 10).map((item) => ({
+    keyword: item.label,
+    present: item.supported,
+    evidence: item.supported
+      ? item.evidenceLabel ?? item.strength
+      : item.evidenceLabel ?? item.gap,
+    action: item.supported
+      ? item.recommendation
+      : item.recommendation
+  }));
+
+  return rows.length
+    ? rows
+    : [
+        {
+          keyword: "Target JD",
+          present: false,
+          evidence: "No known ATS keyword group was detected.",
+          action: "Paste a detailed JD or add more requirement patterns to the ATS catalog."
+        }
+      ];
+}
+
+function buildReviewNotes({
+  score,
+  matched,
+  missing
+}: {
+  score: number;
+  matched: RequirementResult[];
+  missing: RequirementResult[];
+}) {
+  const notes = [
+    "RISE pass completed: role, instructions, steps, expectations, and constraints were applied before rewriting.",
+    "XYZ/CAR pass completed: bullets are pushed toward action-result wording without invented metrics.",
+    missing.length
+      ? `Keyword gap pass found unsupported requirements: ${missing
+          .map((item) => item.label)
+          .slice(0, 3)
+          .join(", ")}.`
+      : "Keyword gap pass found no major unsupported detected requirements.",
+    matched.length
+      ? `Evidence pass matched strongest signals: ${matched
+          .map((item) => item.label)
+          .slice(0, 3)
+          .join(", ")}.`
+      : "Evidence pass did not find strong detected keyword matches.",
+    score >= 75
+      ? "Recruiter self-review: score is above the target threshold; keep factual gaps transparent."
+      : "Recruiter self-review: score is below the target threshold; strengthen supported keywords before applying."
+  ];
+
+  return notes.slice(0, 5);
+}
+
 export function calibrateAtsAnalysis({
   modelAnalysis,
   baselineResume,
@@ -347,6 +408,12 @@ export function calibrateAtsAnalysis({
     matchedLabels,
     missingLabels
   });
+  const keywordGaps = buildKeywordGaps(requirements);
+  const reviewNotes = buildReviewNotes({
+    score: calibratedScore,
+    matched,
+    missing
+  });
 
   return {
     score: calibratedScore,
@@ -374,6 +441,8 @@ export function calibrateAtsAnalysis({
         ...modelRecommendations
       ],
       4
-    )
+    ),
+    keywordGaps,
+    reviewNotes
   };
 }
