@@ -147,27 +147,17 @@ export const baselineResume: BaselineResume = {
       ]
     },
     {
-      company: "Ansh Infotech",
-      title: "Industrial Training In Data Science",
-      location: "India",
-      startDate: "Jun 2019",
-      endDate: "Dec 2019",
-      technologies: ["Python", "Machine Learning", "Data Science"],
+      company: "ANSH InfoTech",
+      title: "Software Engineer Intern",
+      location: "Ludhiana, Punjab, India",
+      startDate: "Jun 2020",
+      endDate: "Dec 2021",
+      technologies: ["HTML", "CSS", "JavaScript", "Bootstrap", "PHP", "MySQL", "Python", "Machine Learning", "SQL"],
       baselineBullets: [
-        "Developed a predictive disease diagnosis model using Python and machine learning algorithms.",
-        "Implemented symptom-based early disease identification to support faster and more timely treatment decisions."
-      ]
-    },
-    {
-      company: "Ansh Infotech",
-      title: "Industrial Training In Web Development",
-      location: "India",
-      startDate: "Jun 2018",
-      endDate: "Jul 2018",
-      technologies: ["HTML", "CSS", "JavaScript", "Bootstrap", "PHP", "MySQL", "JSON"],
-      baselineBullets: [
-        "Designed and developed a user-friendly restaurant website showcasing food items and improving customer browsing experience.",
-        "Implemented online ordering functionality using HTML, CSS, JavaScript, Bootstrap, PHP, MySQL, and JSON."
+        "Completed industrial training in Web Development and Data Science, focused on building practical software solutions and machine learning prototypes.",
+        "Developed a user-friendly restaurant website with online ordering functionality using HTML, CSS, JavaScript, Bootstrap, PHP, and MySQL.",
+        "Built a predictive disease diagnosis model using Python and machine learning algorithms to support symptom-based early disease identification.",
+        "Worked across frontend, backend, database, and ML components, strengthening practical skills in full-stack development and applied data science."
       ]
     }
   ],
