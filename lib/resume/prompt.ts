@@ -118,7 +118,7 @@ export function buildResumeRewritePrompt({
                 keyword: "JD keyword or requirement",
                 present: true,
                 evidence: "exact supported evidence or closest truthful adjacent evidence",
-                action: "how to use it or whether to leave it as a gap"
+                action: "how the app handled it in the resume and cover letter, or why it stayed as an honest gap"
               }
             ],
             reviewNotes: [

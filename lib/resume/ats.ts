@@ -329,8 +329,8 @@ function buildKeywordGaps(requirements: RequirementResult[]): KeywordGap[] {
       ? item.evidenceLabel ?? item.strength
       : item.evidenceLabel ?? item.gap,
     action: item.supported
-      ? item.recommendation
-      : item.recommendation
+      ? `Used in tailoring: ${item.recommendation}`
+      : `Kept as an honest gap: ${item.recommendation}`
   }));
 
   return rows.length
@@ -340,7 +340,7 @@ function buildKeywordGaps(requirements: RequirementResult[]): KeywordGap[] {
           keyword: "Target JD",
           present: false,
           evidence: "No known ATS keyword group was detected.",
-          action: "Paste a detailed JD or add more requirement patterns to the ATS catalog."
+          action: "Not applied yet: paste a detailed JD or add more requirement patterns to the ATS catalog."
         }
       ];
 }

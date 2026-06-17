@@ -25,7 +25,7 @@ const DEFAULT_ATS_ANALYSIS: AtsAnalysis = {
       keyword: "Target JD",
       present: false,
       evidence: "No target job description has been analyzed yet.",
-      action: "Paste a JD and optimize to build the keyword gap table."
+      action: "Not applied yet: paste a JD and optimize to build the keyword gap table."
     }
   ],
   reviewNotes: [
@@ -130,7 +130,10 @@ function keywordGapArray(value: unknown, fallback: AtsAnalysis["keywordGaps"]) {
       keyword: stringValue(item.keyword).slice(0, 80),
       present: typeof item.present === "boolean" ? item.present : false,
       evidence: stringValue(item.evidence, "No evidence found.").slice(0, 180),
-      action: stringValue(item.action, "Keep this as a gap unless profile evidence exists.").slice(0, 180)
+      action: stringValue(
+        item.action,
+        "Kept as an honest gap unless profile evidence exists."
+      ).slice(0, 180)
     }))
     .filter((item) => item.keyword)
     .slice(0, 10);

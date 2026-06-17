@@ -161,7 +161,7 @@ function createBaselineAtsAnalysis(): AtsAnalysis {
         keyword: "Target JD",
         present: false,
         evidence: "No JD has been analyzed yet.",
-        action: "Paste a JD and optimize to generate the keyword gap table."
+        action: "Not applied yet: paste a JD and optimize to generate the keyword gap table."
       }
     ],
     reviewNotes: [
@@ -1055,8 +1055,9 @@ function KeywordGapTable({ gaps }: { gaps: AtsAnalysis["keywordGaps"] }) {
       <div className="border-b bg-slate-50 px-3 py-2">
         <p className="font-semibold text-slate-800">Keyword gap chain</p>
         <p className="mt-1 text-xs leading-5 text-slate-500">
-          Present keywords are used in the resume. Missing ones stay as gaps or
-          adjacent positioning.
+          Shows how the optimizer handled each JD keyword. Present items are
+          woven into the documents; gaps are kept honest or positioned through
+          adjacent evidence.
         </p>
       </div>
       <div className="overflow-x-auto">
@@ -1066,7 +1067,7 @@ function KeywordGapTable({ gaps }: { gaps: AtsAnalysis["keywordGaps"] }) {
               <th className="border-b px-3 py-2">Keyword</th>
               <th className="border-b px-3 py-2">Status</th>
               <th className="border-b px-3 py-2">Evidence</th>
-              <th className="border-b px-3 py-2">Action</th>
+              <th className="border-b px-3 py-2">How the app handles it</th>
             </tr>
           </thead>
           <tbody>
