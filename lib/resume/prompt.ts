@@ -33,6 +33,8 @@ export function buildResumeRewritePrompt({
       "If the JD requires sehr gute Deutschkenntnisse, verhandlungssicher Deutsch, fluent German, C1/C2 German, or intensive German client communication, compare it against the baseline language level honestly. Treat B1 or conversational German as a partial match only, never upgrade the language level, and reflect the gap in atsAnalysis.score and gaps.",
       "Always write the final resume and cover letter in professional English, even if the job description is written in German or another language.",
       "You may translate relevant non-English job requirements into English keywords, but do not output German or mixed-language resume or cover letter text.",
+      "Translate German role titles, responsibilities, benefits, and workplace phrases into natural English. Example: write 'Microsoft .NET/C# Web Developer', not 'Webprogrammierer Microsoft .NET / C#'.",
+      "Do not copy German fragments such as abwechslungsreiche Projekte, motiviertes Team, flexible Arbeitszeiten, Homeoffice-Anteil, Applikationen, or Deutschkenntnisse into the English cover letter. Translate the meaning or omit perk-focused wording.",
       "Keep the generated text close to the baseline resume length so the locked LaTeX layout does not move.",
       "The resume summary must be a professional value statement, not an objective statement. Do not write 'seeking', 'looking for', 'applying for', or mention the target company name in the resume summary.",
       "Company-specific motivation belongs only in the cover letter, never in the resume summary.",

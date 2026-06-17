@@ -85,6 +85,27 @@ function resumeSummary(value: unknown, fallback: string) {
     .slice(0, 520);
 }
 
+function coverLetterParagraph(value: string) {
+  return value
+    .replace(/\bWebprogrammierer(?:in)?\b/gi, "Web Developer")
+    .replace(/\bSingle-Page-Applikationen\b/gi, "single-page applications")
+    .replace(/\bProgressive Web Apps\b/g, "progressive web apps")
+    .replace(/\babwechslungsreiche(?:n|r|s)? Projekte\b/gi, "varied projects")
+    .replace(/\bmotivierte(?:n|s|r)? Team\b/gi, "motivated team")
+    .replace(/\bflexible Arbeitszeiten\b/gi, "flexible working hours")
+    .replace(/\bhohe(?:n|r|s)? Homeoffice-Anteil\b/gi, "strong remote-work flexibility")
+    .replace(/\bHomeoffice-Anteil\b/gi, "remote-work flexibility")
+    .replace(/\bArbeitszeiten\b/gi, "working hours")
+    .replace(/\bApplikationen\b/gi, "applications")
+    .replace(/\bAnforderungen\b/gi, "requirements")
+    .replace(/\bDeutschkenntnisse\b/gi, "German language skills")
+    .replace(/\bKenntnisse\b/gi, "skills")
+    .replace(/\bKunden\b/gi, "customers")
+    .replace(/\bmitarbeiter(?:in|innen)?\b/gi, "team members")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function stringArray(value: unknown, fallback: string[], min = 0, max = 99) {
   if (!Array.isArray(value)) {
     return fallback.slice(0, max);
@@ -198,7 +219,7 @@ export function normalizeGroqOutput({
     defaultCoverLetter.paragraphs,
     4,
     5
-  );
+  ).map(coverLetterParagraph);
   const atsAnalysis: AtsAnalysis = {
     score: Math.min(
       100,
