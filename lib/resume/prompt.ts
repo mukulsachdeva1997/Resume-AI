@@ -24,17 +24,21 @@ export function buildResumeRewritePrompt({
       "Return JSON only. Do not include markdown fences, commentary, or prose outside JSON.",
       "Never fabricate employers, degrees, project names, technologies, dates, metrics, or responsibilities.",
       "Never add tools, testing frameworks, domain experience, industries, or methods that are not supported by the baseline data.",
+      "This rule applies especially to the cover letter: do not write first-person claims for unsupported JD-only terms such as Blazor, Azure DevOps, Jest, Vitest, unit tests, clean code ownership, logistics-domain experience, SAP, Kubernetes, or any other absent tool/domain.",
+      "Do not call a past role current. Use 'previous role', 'experience at', or the role dates when an experience has an end date.",
       "You may rewrite wording, reorder emphasis, and mirror job-description language when it is supported by the baseline data.",
       "Act like the candidate needs this job urgently: maximize honest ATS alignment, keyword coverage, and hiring-manager relevance while staying factual.",
+      "Avoid generic cover-letter filler such as highly motivated, excited to apply, confident that I can make a valuable contribution, or strong fit unless followed by specific supported evidence.",
       "Skim the JD for role title, must-have tools, responsibilities, domain signals, collaboration style, and soft-skill patterns.",
       "Use exact JD keywords only when the baseline supports them directly or through a truthful adjacent phrasing.",
       "Do not claim direct experience with a JD technology that is absent from the baseline. For example, if the JD asks for Java but the baseline only supports C# .NET and Python Flask, mention C# .NET/Python Flask as adjacent backend experience and list Java as a gap.",
+      "For unsupported JD tools, either omit the tool from the cover letter or use adjacent supported wording such as React/Angular instead of Blazor, GitHub/Docker/AWS deployment workflows instead of Azure DevOps, and implementation quality instead of unit-test ownership.",
       "If selected projects support a JD requirement, explicitly use that evidence in the cover letter. For example, Tidy Team supports PWA, mobile-first React, and real-world product behavior.",
       "If the JD requires sehr gute Deutschkenntnisse, verhandlungssicher Deutsch, fluent German, C1/C2 German, or intensive German client communication, compare it against the baseline language level honestly. Treat B1 or conversational German as a partial match only, never upgrade the language level, and reflect the gap in atsAnalysis.score and gaps.",
       "Always write the final resume and cover letter in professional English, even if the job description is written in German or another language.",
       "You may translate relevant non-English job requirements into English keywords, but do not output German or mixed-language resume or cover letter text.",
       "Translate German role titles, responsibilities, benefits, and workplace phrases into natural English. Example: write 'Microsoft .NET/C# Web Developer', not 'Webprogrammierer Microsoft .NET / C#'.",
-      "Do not copy German fragments such as abwechslungsreiche Projekte, motiviertes Team, flexible Arbeitszeiten, Homeoffice-Anteil, Applikationen, or Deutschkenntnisse into the English cover letter. Translate the meaning or omit perk-focused wording.",
+      "Do not copy German fragments such as Softwareentwickler, abwechslungsreiche Projekte, motiviertes Team, flexible Arbeitszeiten, Homeoffice-Anteil, Applikationen, or Deutschkenntnisse into the English cover letter. Translate the meaning or omit perk-focused wording.",
       "Keep the generated text close to the baseline resume length so the locked LaTeX layout does not move.",
       "The resume summary must be a professional value statement, not an objective statement. Do not write 'seeking', 'looking for', 'applying for', or mention the target company name in the resume summary.",
       "Company-specific motivation belongs only in the cover letter, never in the resume summary.",
@@ -50,7 +54,7 @@ export function buildResumeRewritePrompt({
       "Do not default to round scores like 80. Choose the score from evidence, and vary it according to actual missing requirements.",
       "Keep personal details, education, companies, project identity, language skills, and volunteering factual.",
       "Also generate a one-page cover letter body tailored to the JD.",
-      "The cover letter sender/contact block is rendered by the app, so return only greeting, paragraphs, closing, signoff, and signature."
+      "The cover letter sender/contact block is rendered by the app, so return only greeting, paragraphs, closing, signoff, and signature. Do not include a thank-you paragraph because the closing is rendered separately."
     ].join(" "),
     user: JSON.stringify(
       {

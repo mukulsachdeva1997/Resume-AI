@@ -67,6 +67,15 @@ const requirementCatalog: Requirement[] = [
     recommendation: "Mention Angular only where it is already supported by experience."
   },
   {
+    label: "Blazor",
+    matchers: [/\bblazor\b/i],
+    evidence: [/\bblazor\b/i],
+    weight: 8,
+    gap: "No direct Blazor experience is evidenced.",
+    strength: "Blazor experience is directly supported.",
+    recommendation: "Do not claim Blazor; position React, Angular, and C# .NET as adjacent UI/backend experience."
+  },
+  {
     label: "Vue",
     matchers: [/\bvue(?:\.js)?\b/i],
     evidence: [/\bvue(?:\.js)?\b/i],
@@ -168,11 +177,20 @@ const requirementCatalog: Requirement[] = [
   {
     label: "Testing",
     matchers: [/\btesting\b|\bunit tests?\b|\bintegration tests?\b|\bjest\b|\bvitest\b|\brtl\b|\bcypress\b|\bplaywright\b|\be2e\b/i],
-    evidence: [/\btesting\b|\bunit tests?\b|\bintegration tests?\b|\bjest\b|\bvitest\b|\brtl\b|\bcypress\b|\bplaywright\b|\be2e\b|\bcross-validation\b/i],
+    evidence: [/\btesting\b|\bunit tests?\b|\bintegration tests?\b|\bjest\b|\bvitest\b|\brtl\b|\bcypress\b|\bplaywright\b|\be2e\b/i],
     weight: 8,
-    gap: "Modern frontend testing tools are not directly evidenced.",
-    strength: "Testing experience is supported.",
-    recommendation: "Avoid naming Jest, Vitest, RTL, Cypress, or Playwright unless added truthfully."
+    gap: "Modern software testing or unit-test experience is not directly evidenced.",
+    strength: "Software testing experience is directly supported.",
+    recommendation: "Keep testing as an honest gap unless real unit, integration, or E2E testing evidence is added."
+  },
+  {
+    label: "Clean code",
+    matchers: [/\bclean code\b|\bclean-code\b/i],
+    evidence: [/\bclean code\b|\bclean-code\b/i],
+    weight: 4,
+    gap: "Clean-code practice is requested but not explicitly evidenced.",
+    strength: "Clean-code practice is directly supported.",
+    recommendation: "Use implementation quality wording without claiming formal clean-code ownership."
   },
   {
     label: "CMS or WordPress",
@@ -200,6 +218,15 @@ const requirementCatalog: Requirement[] = [
     gap: "DevOps or deployment culture is requested but only lightly evidenced.",
     strength: "Docker, AWS, GitHub Actions, and deployment workflow experience are supported.",
     recommendation: "Keep DevOps phrasing tied to Docker, AWS, GitHub Actions, or deployment workflows."
+  },
+  {
+    label: "Azure DevOps",
+    matchers: [/\bazure devops\b|\bazure\b/i],
+    evidence: [/\bazure devops\b|\bazure\b/i],
+    weight: 7,
+    gap: "No direct Azure DevOps experience is evidenced.",
+    strength: "Azure DevOps experience is directly supported.",
+    recommendation: "Do not claim Azure DevOps; use GitHub, Docker, AWS, and deployment workflows as adjacent evidence."
   },
   {
     label: "Agile collaboration",
@@ -238,9 +265,27 @@ const requirementCatalog: Requirement[] = [
     recommendation: "Do not claim energy-domain experience unless the profile is expanded truthfully."
   },
   {
+    label: "Logistics domain",
+    matchers: [/\blogistics\b|\blogistik\b/i],
+    evidence: [/\blogistics\b|\blogistik\b/i],
+    weight: 5,
+    gap: "No direct logistics-domain experience is evidenced.",
+    strength: "Logistics-domain experience is directly supported.",
+    recommendation: "Do not claim logistics-domain experience; focus on transferable web, API, and process-oriented software work."
+  },
+  {
+    label: "English fluency",
+    matchers: [/\bbusiness[- ]level fluency in english\b|\bfluent english\b|\benglish fluency\b/i],
+    evidence: [/"language":"english","level":"(?:c1|c2|fluent)/i],
+    weight: 8,
+    gap: "Business-level English is requested but not evidenced.",
+    strength: "Business-level English is supported by English C1.",
+    recommendation: "Keep English C1 visible in the language section."
+  },
+  {
     label: "German fluency",
     matchers: [/\bsehr gute deutsch/i, /\bfluent german\b/i, /\bc1\b.*\bgerman\b/i, /\bc2\b.*\bgerman\b/i, /\bverhandlungssicher(?:e|es|er|en)? deutsch/i],
-    evidence: [/\bgerman\b.*\bc1\b|\bc1\b.*\bgerman\b|\bgerman\b.*\bc2\b|\bc2\b.*\bgerman\b|\bverhandlungssicher/i],
+    evidence: [/"language":"german","level":"(?:c1|c2|fluent|verhandlungssicher)/i],
     weight: 10,
     gap: "The JD asks for strong German, while the profile lists German at B1.",
     strength: "German language ability is supported.",

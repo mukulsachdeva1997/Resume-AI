@@ -87,7 +87,10 @@ function resumeSummary(value: unknown, fallback: string) {
 
 function coverLetterParagraph(value: string) {
   return value
+    .replace(/\bcurrent role at Lasken GmbH\b/gi, "previous role at Lasken GmbH")
+    .replace(/\bcurrent role at Lasken\b/gi, "previous role at Lasken")
     .replace(/\bWebprogrammierer(?:in)?\b/gi, "Web Developer")
+    .replace(/\bSoftwareentwickler(?:in)?\b/gi, "Software Developer")
     .replace(/\bSingle-Page-Applikationen\b/gi, "single-page applications")
     .replace(/\bProgressive Web Apps\b/g, "progressive web apps")
     .replace(/\babwechslungsreiche(?:n|r|s)? Projekte\b/gi, "varied projects")
@@ -102,8 +105,16 @@ function coverLetterParagraph(value: string) {
     .replace(/\bKenntnisse\b/gi, "skills")
     .replace(/\bKunden\b/gi, "customers")
     .replace(/\bmitarbeiter(?:in|innen)?\b/gi, "team members")
+    .replace(/\bBlazor\b/gi, "React and Angular")
+    .replace(/\bAzure DevOps\b/gi, "GitHub, Docker, and AWS deployment workflows")
+    .replace(/\bunit ?tests?\b|\bunittests?\b/gi, "implementation quality practices")
+    .replace(/\bclean code\b/gi, "implementation quality")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function isCoverLetterClosingParagraph(value: string) {
+  return /^thank you\b/i.test(value) || /^i look forward to\b/i.test(value);
 }
 
 function stringArray(value: unknown, fallback: string[], min = 0, max = 99) {
@@ -222,7 +233,9 @@ export function normalizeGroqOutput({
     defaultCoverLetter.paragraphs,
     4,
     5
-  ).map(coverLetterParagraph);
+  )
+    .map(coverLetterParagraph)
+    .filter((paragraph) => paragraph && !isCoverLetterClosingParagraph(paragraph));
   const atsAnalysis: AtsAnalysis = {
     score: Math.min(
       100,
