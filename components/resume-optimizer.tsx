@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Download, Loader2, Sparkles } from "lucide-react";
+import { Download, ExternalLink, Loader2, Search, Sparkles } from "lucide-react";
 import { baselineResume } from "@/lib/resume/baseline";
 import {
   buildCoverLetterLatex,
@@ -27,6 +27,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ResumePreview } from "@/components/resume-preview";
 import { CoverLetterPreview } from "@/components/cover-letter-preview";
+import type { JobRadarFit, JobRadarJob } from "@/lib/job-radar";
 
 const resumePreviewId = "resume-preview";
 const coverLetterPreviewId = "cover-letter-preview";
@@ -61,6 +62,12 @@ type JobApplication = {
 type ApiErrorPayload = {
   error?: string;
   details?: unknown;
+};
+
+type JobRadarResponse = ApiErrorPayload & {
+  jobs?: JobRadarJob[];
+  scanned?: number;
+  source?: string;
 };
 
 function formatApiErrorDetails(details: unknown) {
@@ -231,11 +238,19 @@ export function ResumeOptimizer() {
     createBaselineAtsAnalysis()
   );
   const [isOptimizing, setIsOptimizing] = useState(false);
+  const [isFetchingJobs, setIsFetchingJobs] = useState(false);
   const [exportingDocument, setExportingDocument] = useState<
     "resume" | "coverLetter" | null
   >(null);
   const [status, setStatus] = useState<string>("");
   const [applications, setApplications] = useState<JobApplication[]>([]);
+  const [jobRadarQuery, setJobRadarQuery] = useState(
+    "frontend fullstack react angular .net"
+  );
+  const [jobRadarLocation, setJobRadarLocation] = useState("Germany");
+  const [jobRadarMinimumScore, setJobRadarMinimumScore] = useState(58);
+  const [jobRadarJobs, setJobRadarJobs] = useState<JobRadarJob[]>([]);
+  const [jobRadarStatus, setJobRadarStatus] = useState("");
 
   const projectOptions = useMemo(
     () =>
@@ -582,6 +597,90 @@ export function ResumeOptimizer() {
     setStatus("Profile reset to bundled sample profile.");
   }
 
+  async function fetchJobRadarJobs() {
+    setIsFetchingJobs(true);
+    setJobRadarStatus("");
+
+    try {
+      const response = await fetch("/api/job-radar", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          query: jobRadarQuery,
+          location: jobRadarLocation,
+          minimumScore: jobRadarMinimumScore,
+          candidateProfile: activeProfile
+        })
+      });
+      const payload = (await response.json()) as JobRadarResponse;
+
+      if (!response.ok) {
+        throw new Error(payload.error ?? "Job Radar failed.");
+      }
+
+      const jobs = payload.jobs ?? [];
+
+      setJobRadarJobs(jobs);
+      setJobRadarStatus(
+        jobs.length
+          ? `Found ${jobs.length} ranked jobs from ${payload.source ?? "real job sources"} after scanning ${payload.scanned ?? "available"} listings.`
+          : "No jobs met the current filters. Lower the score or broaden the search."
+      );
+    } catch (error) {
+      setJobRadarStatus(
+        error instanceof Error
+          ? error.message
+          : "Job Radar failed to fetch jobs."
+      );
+    } finally {
+      setIsFetchingJobs(false);
+    }
+  }
+
+  function useJobRadarJob(job: JobRadarJob) {
+    setJobTitle(job.title);
+    setJobCompany(job.company);
+    setJobUrl(job.url);
+    setJobDescription(
+      [
+        `${job.title} at ${job.company}`,
+        `Location: ${job.location}${job.remote ? " · Remote possible" : ""}`,
+        `Source: ${job.source}`,
+        "",
+        job.description
+      ].join("\n")
+    );
+    setStatus("Job loaded into the optimizer. Review projects, then optimize.");
+    document.getElementById("target-role-card")?.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+  }
+
+  function saveJobRadarJob(job: JobRadarJob) {
+    const now = new Date();
+    const followUpDate = new Date(now);
+
+    followUpDate.setDate(now.getDate() + 7);
+    setApplications((current) => [
+      {
+        id: `${Date.now()}-${job.id}`,
+        title: job.title,
+        company: job.company,
+        url: job.url,
+        status: "Saved",
+        score: job.score,
+        followUpDate: followUpDate.toISOString().slice(0, 10),
+        savedAt: now.toISOString(),
+        jobDescription: job.description
+      },
+      ...current
+    ]);
+    setJobRadarStatus("Job saved to application tracker.");
+  }
+
   function saveCurrentJob() {
     const title = jobTitle.trim() || "Untitled role";
     const company = jobCompany.trim() || "Unknown company";
@@ -725,7 +824,153 @@ export function ResumeOptimizer() {
 
             <Card className="shadow-sm">
               <CardHeader>
-                <CardTitle>2. Target role</CardTitle>
+                <CardTitle>2. Job Radar</CardTitle>
+                <CardDescription>
+                  Fetch real job links, rank them against the active profile,
+                  and load the best ones into the optimizer.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-3 sm:grid-cols-[1fr_150px]">
+                  <div className="grid gap-2">
+                    <Label htmlFor="job-radar-query">Role keywords</Label>
+                    <input
+                      id="job-radar-query"
+                      value={jobRadarQuery}
+                      onChange={(event) => setJobRadarQuery(event.target.value)}
+                      placeholder="frontend fullstack react angular .net"
+                      className="h-10 rounded-md border border-input bg-white px-3 text-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="job-radar-location">Location</Label>
+                    <input
+                      id="job-radar-location"
+                      value={jobRadarLocation}
+                      onChange={(event) =>
+                        setJobRadarLocation(event.target.value)
+                      }
+                      placeholder="Germany"
+                      className="h-10 rounded-md border border-input bg-white px-3 text-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
+                  <div className="grid gap-2">
+                    <Label htmlFor="job-radar-score">
+                      Minimum score: {jobRadarMinimumScore}
+                    </Label>
+                    <input
+                      id="job-radar-score"
+                      type="range"
+                      min="45"
+                      max="90"
+                      step="1"
+                      value={jobRadarMinimumScore}
+                      onChange={(event) =>
+                        setJobRadarMinimumScore(Number(event.target.value))
+                      }
+                      className="h-10"
+                    />
+                  </div>
+                  <Button
+                    onClick={fetchJobRadarJobs}
+                    disabled={isFetchingJobs}
+                    className="sm:min-w-[160px]"
+                  >
+                    {isFetchingJobs ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Search className="h-4 w-4" />
+                    )}
+                    Find Jobs
+                  </Button>
+                </div>
+
+                {jobRadarStatus ? (
+                  <p className="rounded-md bg-muted px-3 py-2 text-sm font-medium text-muted-foreground">
+                    {jobRadarStatus}
+                  </p>
+                ) : null}
+
+                <div className="grid gap-3">
+                  {jobRadarJobs.length ? (
+                    jobRadarJobs.map((job) => (
+                      <div
+                        className="rounded-md border bg-white p-3 text-sm"
+                        key={job.id}
+                      >
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <p className="font-semibold leading-5 text-slate-950">
+                                {job.title}
+                              </p>
+                              <FitBadge fit={job.fit} />
+                            </div>
+                            <p className="mt-1 text-slate-500">
+                              {job.company} · {job.location}
+                              {job.remote ? " · Remote" : ""}
+                            </p>
+                            <p className="mt-2 text-xs leading-5 text-slate-500">
+                              {job.applyReason}
+                            </p>
+                            {job.gaps.length ? (
+                              <p className="mt-1 text-xs leading-5 text-amber-700">
+                                Watch: {job.gaps.slice(0, 2).join(" ")}
+                              </p>
+                            ) : null}
+                          </div>
+                          <div className="shrink-0 rounded-md border bg-slate-50 px-3 py-2 text-center">
+                            <span className="block text-2xl font-semibold text-slate-950">
+                              {job.score}
+                            </span>
+                            <span className="text-xs font-semibold text-slate-500">
+                              /100
+                            </span>
+                          </div>
+                        </div>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => useJobRadarJob(job)}
+                          >
+                            Use JD
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => saveJobRadarJob(job)}
+                          >
+                            Save
+                          </Button>
+                          <Button asChild size="sm" variant="outline">
+                            <a href={job.url} rel="noreferrer" target="_blank">
+                              <ExternalLink className="h-3.5 w-3.5" />
+                              Open
+                            </a>
+                          </Button>
+                          <span className="self-center text-xs font-medium text-slate-500">
+                            {job.recommendation}
+                          </span>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">
+                      No jobs loaded yet. Start with broad keywords, then narrow
+                      once the results look useful.
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-sm" id="target-role-card">
+              <CardHeader>
+                <CardTitle>3. Target role</CardTitle>
                 <CardDescription>
                   Paste the JD. The optimize button turns on after 120
                   characters and at least one selected project.
@@ -766,7 +1011,7 @@ export function ResumeOptimizer() {
 
             <Card className="shadow-sm">
               <CardHeader>
-                <CardTitle>3. Projects to include</CardTitle>
+                <CardTitle>4. Projects to include</CardTitle>
                 <CardDescription>
                   {selectedCount}/{projectOptions.length} selected. Every
                   selected project is optimized against the JD.
@@ -1046,6 +1291,23 @@ function AnalysisList({
         ))}
       </ul>
     </div>
+  );
+}
+
+function FitBadge({ fit }: { fit: JobRadarFit }) {
+  const className =
+    fit === "Strong fit"
+      ? "bg-emerald-50 text-emerald-700"
+      : fit === "Medium fit"
+        ? "bg-sky-50 text-sky-700"
+        : fit === "Reach"
+          ? "bg-amber-50 text-amber-700"
+          : "bg-slate-100 text-slate-600";
+
+  return (
+    <span className={`rounded-full px-2 py-1 text-xs font-semibold ${className}`}>
+      {fit}
+    </span>
   );
 }
 
